@@ -6,7 +6,7 @@ emo = [];
 cnt = 1;
     
 % Load EEG data, segment it into individual trials, collect all time-locked trials
-for p=1:6
+for p=1:10
     load(strcat('P',num2str(p)));
     P=eval(strcat('P',num2str(p)));
 
@@ -14,7 +14,7 @@ for p=1:6
     
     % Segmented EEG into trials -200ms to +800ms from the stimulus
     segment_start = round((Fs/10)*2);   % 200 ms
-    segment_end = round((Fs/10)*4);     % 400 ms
+    segment_end = round((Fs/10)*8);     % 400 ms
     
     for r = 1:length(P.EEG) %collect all trials from all runs
         for tr = 1:length(P.EEG(r).stimuli.index)
@@ -28,6 +28,7 @@ for p=1:6
 end %p
 
 time=(-segment_start:segment_end)*(1000/Fs);
+
 %% Pre-process EEG trials
 
 % 1. laplacian filter for channels Cz and Fz
@@ -43,8 +44,8 @@ end
 %}
 
 EEG = eeg;
-[~,zero_s] = find(time==0);    %Index of stimulus onset
-[~,ms170]=min(abs(time - 170));  %Index of 170ms for N170 or VPP
+[~,zero_s] = find(time==0);      % Index of stimulus onset
+[~,ms170]=min(abs(time - 170));  % Index of 170ms for N170 or VPP
 
 
 % 2. lowpass and highpass filter each trial
@@ -62,6 +63,8 @@ for tr = 1:size(EEG,1)
     for ch = 1:size(EEG,2)
         baseline = mean(squeeze(EEG(tr,ch,1:zero_s)));%mean of prestimulus onset 
         EEG(tr,ch,:) = EEG(tr,ch,:)-baseline;
+        
+        %EEG(tr,ch,:) = movmean(EEG(tr,ch,:),round(Fs/10)); % moving average filter on EEG trials
     end
 end
 
